@@ -5,6 +5,7 @@ import com.example.uz.entity.Book;
 import com.example.uz.service.mapper.BookMapperImpl;
 import lombok.Data;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.MultiValueMap;
@@ -22,11 +23,12 @@ public class UniversalBookRepository {
     private final BookMapperImpl mapper;
 
     public Page<BookDto> getBookByParam(MultiValueMap<String, String> map, Pageable pageable){
+
         StringBuilder builder = new StringBuilder();
         addConditionToString(map, builder);
 
-        String query1 = "SELECT * FROM book WHERE" + builder;
-        String query2 = "SELECT count(1) FROM book WHERE " + builder;
+        String query1 = "SELECT * FROM book WHERE 1=1" + builder;
+        String query2 = "SELECT count(1) FROM book WHERE 1=1" + builder;
 
         Query getQuery = manager.createNativeQuery(query1, Book.class);
         Query countQuery = manager.createNativeQuery(query2, Integer.class);
@@ -34,9 +36,14 @@ public class UniversalBookRepository {
         addParameters(map, getQuery);
         addParameters(map, countQuery);
 
+        List<Book> bookList = getQuery.getResultList();
+        Integer summary = countQuery.getFirstResult();
 
+        List<BookDto> bookDtoList = bookList.stream().map(mapper::toDto).toList();
 
-        return null;
+        Page<BookDto> impl = new PageImpl(bookDtoList, pageable, summary);
+
+        return impl;
     }
 
     private void addConditionToString(MultiValueMap<String, String> map, StringBuilder builder){

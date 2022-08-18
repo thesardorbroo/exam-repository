@@ -4,6 +4,7 @@ import com.example.uz.dto.BookDto;
 import com.example.uz.dto.ResponseDto;
 import com.example.uz.entity.Book;
 import com.example.uz.repository.BookRepository;
+import com.example.uz.repository.UniversalBookRepository;
 import com.example.uz.service.BookService;
 import com.example.uz.service.mapper.BookMapperImpl;
 import lombok.Data;
@@ -17,6 +18,8 @@ import org.springframework.util.MultiValueMap;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository repository;
+
+    private final UniversalBookRepository repo;
 
     private final BookMapperImpl mapper;
 
@@ -41,7 +44,12 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public ResponseDto<Page<BookDto>> getBookByParam(MultiValueMap<String, String> map) {
-        return null;
+        if(!map.containsKey("p") || !map.containsKey("s")){
+            return ResponseDto.<Page<BookDto>>builder().code(-1).success(false).message("Page is not found!").build();
+        }
+        PageRequest request = PageRequest.of(Integer.parseInt(map.getFirst("p")), Integer.parseInt(map.getFirst("s")));
+        Page<BookDto> page = repo.getBookByParam(map,request);
+        return ResponseDto.<Page<BookDto>>builder().code(1).success(true).message("OK").data(page).build();
     }
 
     @Override

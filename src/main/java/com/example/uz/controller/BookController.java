@@ -27,7 +27,7 @@ public class BookController {
 
     @GetMapping
     public ResponseDto<Page<BookDto>> getBookByParam(@RequestParam MultiValueMap<String, String> map){
-        return null;
+        return service.getBookByParam(map);
     }
 
     @DeleteMapping("/{id}")
